@@ -1,39 +1,46 @@
-import seedrandom from 'seedrandom';
+import type {RandomNumberGenerator} from "../interfaces/random-number-generator.ts";
+import type {StoryElements} from "../models/story-elements.ts";
 
 export class StoryGenerator {
-    public generateStory(seed: string): string {
-        // Initialize the seeded random number generator
-        const rng = seedrandom(seed);
+    private rng: RandomNumberGenerator;
+    private elements: StoryElements;
 
-        // Arrays of possible story elements
-        const characters = ['knight', 'wizard', 'thief', 'dragon', 'elf'];
-        const names = ['Aria', 'Borin', 'Cedric', 'Daphne', 'Elric'];
-        const settings = ['enchanted forest', 'abandoned castle', 'mystic mountain', 'shadow realm', 'ancient ruins'];
-        const quests = ['seek the lost artifact', 'rescue the captured prince', 'defeat the shadow beast', 'break the eternal curse', 'discover the hidden valley'];
-        const obstacles = ['a fierce storm', 'a band of marauders', 'a cunning illusionist', 'an impassable chasm', 'a treacherous maze'];
-        const outcomes = ['succeeded gloriously', 'failed tragically', 'barely escaped', 'found unexpected help', 'uncovered a deeper mystery'];
-
-        // Helper function to select a random element from an array
-        function choose<T>(arr: T[]): T {
-            const index = Math.floor(rng() * arr.length);
-            return arr[index];
+    constructor(rng: RandomNumberGenerator, elements: StoryElements) {
+        if (!rng || !elements) {
+            throw new Error('RandomNumberGenerator and StoryElements cannot be null');
         }
+        this.rng = rng;
+        this.elements = elements;
+    }
 
-        // Generate story elements
-        const characterType = choose(characters);
-        const characterName = choose(names);
-        const setting = choose(settings);
-        const quest = choose(quests);
-        const obstacle = choose(obstacles);
-        const outcome = choose(outcomes);
+    private choose<T>(arr: T[]): T {
+        if (!arr || arr.length === 0) {
+            throw new Error('Array cannot be null or empty');
+        }
+        const index = Math.floor(this.rng.next() * arr.length);
+        return arr[index];
+    }
 
-        // Construct the story
-        const story = `
+    public generateStory(): string {
+        try {
+            const characterType = this.choose(this.elements.characters);
+            const characterName = this.choose(this.elements.names);
+            const setting = this.choose(this.elements.settings);
+            const quest = this.choose(this.elements.quests);
+            const obstacle = this.choose(this.elements.obstacles);
+            const outcome = this.choose(this.elements.outcomes);
+
+            const story = `
 Once upon a time, a ${characterType} named ${characterName} embarked on a quest to ${quest}.
 Journeying through the ${setting}, they faced ${obstacle}.
 In the end, ${characterName} ${outcome}, leaving a tale that would be told for generations.
-  `;
+      `;
 
-        return story.trim();
+            console.log('Story generated successfully');
+            return story.trim();
+        } catch (error:any) {
+            console.error('Error generating story:', error.message);
+            throw new Error('Failed to generate story');
+        }
     }
 }
